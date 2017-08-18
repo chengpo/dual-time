@@ -1,0 +1,42 @@
+{
+    "author": "Po Cheng",
+    "dependencies": {},
+    "keywords": [],
+    "name": "dual-time",
+    "pebble": {
+        "displayName": "dual-time",
+        "enableMultiJS": true,
+        "messageKeys": [],
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "characterRegex": "[0-9:.]",
+                    "file": "fonts/perfect-dos-vga.ttf",
+                    "name": "RESOURCE_ID_FONT_PERFECT_DOS_48",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite",
+                        "emery"
+                    ],
+                    "type": "font"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk",
+            "diorite",
+            "emery"
+        ],
+        "uuid": "13d81bac-528c-4591-b8d4-c7c9cf02b8b9",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "1.0.0"
+}
