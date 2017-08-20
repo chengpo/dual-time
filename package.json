@@ -9,21 +9,7 @@
         "messageKeys": [],
         "projectType": "native",
         "resources": {
-            "media": [
-                {
-                    "characterRegex": "[0-9:.]",
-                    "file": "fonts/perfect-dos-vga.ttf",
-                    "name": "RESOURCE_ID_FONT_PERFECT_DOS_48",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk",
-                        "diorite",
-                        "emery"
-                    ],
-                    "type": "font"
-                }
-            ]
+            "media": []
         },
         "sdkVersion": "3",
         "targetPlatforms": [

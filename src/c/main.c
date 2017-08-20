@@ -1,104 +1,110 @@
 #include <pebble.h>
 
-static Window *s_main_window;
-static TextLayer *s_first_time_layer;
-static TextLayer *s_date_layer;
-static TextLayer *s_second_time_layer;
-
-static GFont s_time_font;
-
 #define CCT (+8)
+
+#define TOTAL_TEXT_LAYER (3)
+#define LOCAL_TIME_TEXT_LAYER (text_layers[0])
+#define LOCAL_DATE_TEXT_LAYER (text_layers[1])
+#define FOREIGN_TIME_TEXT_LAYER (text_layers[2])
+
+typedef struct {
+  GRect  rect;
+  GColor background_color;
+  GColor text_color;
+  char   *init_text;
+  GFont  font;
+  GTextAlignment text_alignment;
+} TextLayerProp;
+
+static TextLayer *text_layers[TOTAL_TEXT_LAYER];
+static Window *s_main_window;
 
 static void main_window_load(Window *window) {
   // Get information about the Window
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
+  
+  // Init text layer properties
+  TextLayerProp text_layer_props[] = {
+    // local time
+    {.rect = GRect(0, PBL_IF_ROUND_ELSE(28, 22), bounds.size.w, 50),
+     .background_color = GColorClear,
+     .text_color = GColorBlack,
+     .init_text = "00:00",
+     .font = fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS),
+     .text_alignment = GTextAlignmentCenter},
+    // local date
+    {.rect = GRect(0, PBL_IF_ROUND_ELSE(78, 72), bounds.size.w, 50),
+     .background_color = GColorClear,
+     .text_color = GColorBlack,
+     .init_text = "00:00",
+     .font = fonts_get_system_font(FONT_KEY_LECO_28_LIGHT_NUMBERS),
+     .text_alignment = GTextAlignmentCenter},
+    // foreign time
+    {.rect = GRect(0, PBL_IF_ROUND_ELSE(128, 122), bounds.size.w, 50),
+     .background_color = GColorClear,
+     .text_color = GColorBlack,
+     .init_text = "- 00:00 -",
+     .font = fonts_get_system_font(FONT_KEY_LECO_20_BOLD_NUMBERS),
+     .text_alignment = GTextAlignmentCenter}
+  };
+  
+  for (int i = 0; i < TOTAL_TEXT_LAYER; i++) {
+    text_layers[i] =  text_layer_create(text_layer_props[i].rect);
+    
+    text_layer_set_background_color(text_layers[i], text_layer_props[i].background_color);
+    text_layer_set_text_color(text_layers[i], text_layer_props[i].text_color);
+    text_layer_set_text(text_layers[i], text_layer_props[i].init_text);
+    text_layer_set_font(text_layers[i], text_layer_props[i].font);
+    text_layer_set_text_alignment(text_layers[i], text_layer_props[i].text_alignment);
+    
+    layer_add_child(window_layer, text_layer_get_layer(text_layers[i]));
+  }
+}
 
-  // Create the TextLayer with specific bounds
-  s_first_time_layer = text_layer_create(
-      GRect(0, PBL_IF_ROUND_ELSE(28, 22), bounds.size.w, 50));
+static void update_local_time() {
+  time_t temp = time(NULL);
+  struct tm *tick_time = localtime(&temp);
   
-  s_date_layer = text_layer_create(
-      GRect(0, PBL_IF_ROUND_ELSE(78, 72), bounds.size.w, 50));
+  static char local_time[8];
+  strftime(local_time, sizeof(local_time), "%H:%M" , tick_time);
   
-  s_second_time_layer = text_layer_create(
-      GRect(0, PBL_IF_ROUND_ELSE(128, 122), bounds.size.w, 50));
-  
-  // Create GFont
-  // s_time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_PERFECT_DOS_48));
+  text_layer_set_text(LOCAL_TIME_TEXT_LAYER, local_time);
+}
 
-  // Apply to TextLayer
-  //text_layer_set_font(s_first_time_layer, s_time_font);
+static void update_local_date() {
+  time_t temp = time(NULL);
+  struct tm *tick_time = localtime(&temp);
+  
+  static char local_date[8];
+  snprintf(local_date, sizeof(local_date), "%02d/%02d", tick_time->tm_mon+1, tick_time->tm_mday);
+  text_layer_set_text(LOCAL_DATE_TEXT_LAYER, local_date);
+}
 
-  // Improve the layout to be more like a watchface
-  text_layer_set_background_color(s_first_time_layer, GColorClear);
-  text_layer_set_text_color(s_first_time_layer, GColorBlack);
-  text_layer_set_text(s_first_time_layer, "00:00");
-  text_layer_set_font(s_first_time_layer, fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS));
-  text_layer_set_text_alignment(s_first_time_layer, GTextAlignmentCenter);
+static void update_foreign_time() {
+  time_t temp = time(NULL);
   
-  // Add it as a child layer to the Window's root layer
-  layer_add_child(window_layer, text_layer_get_layer(s_first_time_layer));
+  struct tm *gmt = gmtime(&temp);
+  static char foreign_time[12];
   
-  // date 
-  text_layer_set_background_color(s_date_layer, GColorClear);
-  text_layer_set_text_color(s_date_layer, GColorBlack);
-  text_layer_set_text(s_date_layer, "00/00");
-  text_layer_set_font(s_date_layer, fonts_get_system_font(FONT_KEY_LECO_28_LIGHT_NUMBERS));
-  text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
-  
-  // Add it as a child layer to the Window's root layer
-  layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
-  
-  
-  // second time
-  text_layer_set_background_color(s_second_time_layer, GColorClear);
-  text_layer_set_text_color(s_second_time_layer, GColorBlack);
-  text_layer_set_text(s_second_time_layer, "00:00");
-  text_layer_set_font(s_second_time_layer, fonts_get_system_font(FONT_KEY_LECO_20_BOLD_NUMBERS));
-  text_layer_set_text_alignment(s_second_time_layer, GTextAlignmentCenter);
-
-  // Add it as a child layer to the Window's root layer
-  layer_add_child(window_layer, text_layer_get_layer(s_second_time_layer));
+  snprintf(foreign_time, sizeof(foreign_time), "- %02d:%02d -", (gmt->tm_hour+CCT)%24, gmt->tm_min);
+  text_layer_set_text(FOREIGN_TIME_TEXT_LAYER, foreign_time);
 }
 
 static void update_time() {
-  // Get a tm structure
-  time_t temp = time(NULL);
-  struct tm *tick_time = localtime(&temp);
-
-  // Write the current hours and minutes into a buffer
-  static char s_localtime_buffer[8];
-  strftime(s_localtime_buffer, sizeof(s_localtime_buffer), "%H:%M" , tick_time);
-
-  // Display this time on the fist TextLayer
-  text_layer_set_text(s_first_time_layer, s_localtime_buffer);
-  
-  // Display date
-  static char s_date_buffer[8];
-  snprintf(s_date_buffer, sizeof(s_date_buffer), "%02d/%02d", tick_time->tm_mon+1, tick_time->tm_mday);
-  text_layer_set_text(s_date_layer, s_date_buffer);
-  
-  // Display China time
-  struct tm *gmt = gmtime(&temp);
-  static char s_cct_buffer[12];
-  
-  snprintf(s_cct_buffer, sizeof(s_cct_buffer), "- %02d:%02d -", (gmt->tm_hour+CCT)%24, gmt->tm_min);
-  text_layer_set_text(s_second_time_layer, s_cct_buffer);
+  update_local_time();
+  update_local_date();
+  update_foreign_time();
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
-  update_time();
+   update_time();
 }
 
 static void main_window_unload(Window *window) {
-  // Destroy TextLayer
-  text_layer_destroy(s_first_time_layer);
-  text_layer_destroy(s_second_time_layer);
-  text_layer_destroy(s_date_layer);
-  
-  // Unload GFont
-  //fonts_unload_custom_font(s_time_font);
+  for (int i = 0; i < TOTAL_TEXT_LAYER; i++) {
+     text_layer_destroy(text_layers[i]);
+  }
 }
  
 static void init() {
@@ -130,4 +136,5 @@ int main(void) {
   init();
   app_event_loop();
   deinit();
+  return 0;
 }
