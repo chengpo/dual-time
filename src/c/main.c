@@ -28,21 +28,21 @@ static void main_window_load(Window *window) {
   // Init text layer properties
   TextLayerProp text_layer_props[] = {
     // local week day
-    {.rect = GRect(0, PBL_IF_ROUND_ELSE(18, 8), bounds.size.w, 50),
+    {.rect = GRect(0, PBL_IF_ROUND_ELSE(18, 10), bounds.size.w, 50),
      .background_color = GColorClear,
      .text_color = GColorBlack,
      .init_text = "Mon",
-     .font = fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
+     .font = fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
      .text_alignment = GTextAlignmentCenter},
     // local time
-    {.rect = GRect(0, PBL_IF_ROUND_ELSE(38, 28), bounds.size.w, 50),
+    {.rect = GRect(0, PBL_IF_ROUND_ELSE(38, 35), bounds.size.w, 50),
      .background_color = GColorClear,
      .text_color = GColorBlack,
      .init_text = "00:00",
      .font = fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS),
      .text_alignment = GTextAlignmentCenter},
     // local date
-    {.rect = GRect(0, PBL_IF_ROUND_ELSE(88, 78), bounds.size.w, 50),
+    {.rect = GRect(0, PBL_IF_ROUND_ELSE(88, 80), bounds.size.w, 50),
      .background_color = GColorClear,
      .text_color = GColorBlack,
      .init_text = "00:00",
@@ -74,7 +74,7 @@ static void update_local_wday() {
   time_t temp = time(NULL);
   struct tm *tick_time = localtime(&temp);
   
-  static char *wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+  static char *wday[] = {"SUN","MON","TUE","WED","THU","FRI","SAT"};
   
   text_layer_set_text(LOCAL_WDAY_TEXT_LAYER, wday[tick_time->tm_wday]);
 }
