@@ -2,10 +2,11 @@
 
 #define CCT (+8)
 
-#define TOTAL_TEXT_LAYER (3)
-#define LOCAL_TIME_TEXT_LAYER (text_layers[0])
-#define LOCAL_DATE_TEXT_LAYER (text_layers[1])
-#define FOREIGN_TIME_TEXT_LAYER (text_layers[2])
+#define TOTAL_TEXT_LAYER (4)
+#define LOCAL_WDAY_TEXT_LAYER (text_layers[0])
+#define LOCAL_TIME_TEXT_LAYER (text_layers[1])
+#define LOCAL_DATE_TEXT_LAYER (text_layers[2])
+#define FOREIGN_TIME_TEXT_LAYER (text_layers[3])
 
 typedef struct {
   GRect  rect;
@@ -26,22 +27,29 @@ static void main_window_load(Window *window) {
   
   // Init text layer properties
   TextLayerProp text_layer_props[] = {
+    // local week day
+    {.rect = GRect(0, PBL_IF_ROUND_ELSE(18, 8), bounds.size.w, 50),
+     .background_color = GColorClear,
+     .text_color = GColorBlack,
+     .init_text = "Mon",
+     .font = fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
+     .text_alignment = GTextAlignmentCenter},
     // local time
-    {.rect = GRect(0, PBL_IF_ROUND_ELSE(28, 22), bounds.size.w, 50),
+    {.rect = GRect(0, PBL_IF_ROUND_ELSE(38, 28), bounds.size.w, 50),
      .background_color = GColorClear,
      .text_color = GColorBlack,
      .init_text = "00:00",
      .font = fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS),
      .text_alignment = GTextAlignmentCenter},
     // local date
-    {.rect = GRect(0, PBL_IF_ROUND_ELSE(78, 72), bounds.size.w, 50),
+    {.rect = GRect(0, PBL_IF_ROUND_ELSE(88, 78), bounds.size.w, 50),
      .background_color = GColorClear,
      .text_color = GColorBlack,
      .init_text = "00:00",
      .font = fonts_get_system_font(FONT_KEY_LECO_28_LIGHT_NUMBERS),
      .text_alignment = GTextAlignmentCenter},
     // foreign time
-    {.rect = GRect(0, PBL_IF_ROUND_ELSE(128, 122), bounds.size.w, 50),
+    {.rect = GRect(0, PBL_IF_ROUND_ELSE(138, 128), bounds.size.w, 50),
      .background_color = GColorClear,
      .text_color = GColorBlack,
      .init_text = "- 00:00 -",
@@ -60,6 +68,15 @@ static void main_window_load(Window *window) {
     
     layer_add_child(window_layer, text_layer_get_layer(text_layers[i]));
   }
+}
+
+static void update_local_wday() {
+  time_t temp = time(NULL);
+  struct tm *tick_time = localtime(&temp);
+  
+  static char *wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+  
+  text_layer_set_text(LOCAL_WDAY_TEXT_LAYER, wday[tick_time->tm_wday]);
 }
 
 static void update_local_time() {
@@ -83,15 +100,15 @@ static void update_local_date() {
 
 static void update_foreign_time() {
   time_t temp = time(NULL);
-  
   struct tm *gmt = gmtime(&temp);
-  static char foreign_time[12];
   
+  static char foreign_time[12];
   snprintf(foreign_time, sizeof(foreign_time), "- %02d:%02d -", (gmt->tm_hour+CCT)%24, gmt->tm_min);
   text_layer_set_text(FOREIGN_TIME_TEXT_LAYER, foreign_time);
 }
 
 static void update_time() {
+  update_local_wday();
   update_local_time();
   update_local_date();
   update_foreign_time();
