@@ -4,7 +4,7 @@
     "keywords": [],
     "name": "dual-time",
     "pebble": {
-        "displayName": "dual-time",
+        "displayName": "Dual Time",
         "enableMultiJS": true,
         "messageKeys": [],
         "projectType": "native",
