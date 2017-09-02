@@ -30,12 +30,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 typedef struct {
     GRect  rect;
-    GColor background_color;
-    GColor text_color;
     char   *init_text;
     GFont  font;
     GTextAlignment text_alignment;
 } TextLayerProp;
+
+typedef struct {
+    GColor forground_color;
+    GColor background_color;
+} TextColorProp;
 
 static TextLayer *text_layers[TOTAL_TEXT_LAYER];
 static Window *s_main_window;
@@ -44,34 +47,40 @@ static void main_window_load(Window *window) {
     // Get information about the Window
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_bounds(window_layer);
-
+  
+    bool revert_color = true;
+  
+    // Init text color
+    TextColorProp text_color_prop;
+  
+    text_color_prop.forground_color = revert_color ? GColorWhite : GColorBlack;
+    text_color_prop.background_color = revert_color ? GColorBlack : GColorWhite;
+  
+    if (revert_color) {
+        window_set_background_color(window, GColorBlack);
+    } else {
+        window_set_background_color(window, GColorWhite);
+    }
+    
     // Init text layer properties
     TextLayerProp text_layer_props[] = {
         // local week day
         {.rect = GRect(0, PBL_IF_ROUND_ELSE(18, 10), bounds.size.w, 50),
-            .background_color = GColorClear,
-            .text_color = GColorBlack,
             .init_text = "Mon",
             .font = fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
             .text_alignment = GTextAlignmentCenter},
         // local time
         {.rect = GRect(0, PBL_IF_ROUND_ELSE(38, 35), bounds.size.w, 50),
-            .background_color = GColorClear,
-            .text_color = GColorBlack,
             .init_text = "00:00",
             .font = fonts_get_system_font(FONT_KEY_LECO_42_NUMBERS),
             .text_alignment = GTextAlignmentCenter},
         // local date
         {.rect = GRect(0, PBL_IF_ROUND_ELSE(88, 80), bounds.size.w, 50),
-            .background_color = GColorClear,
-            .text_color = GColorBlack,
             .init_text = "00:00",
             .font = fonts_get_system_font(FONT_KEY_LECO_28_LIGHT_NUMBERS),
             .text_alignment = GTextAlignmentCenter},
         // foreign time
         {.rect = GRect(0, PBL_IF_ROUND_ELSE(138, 128), bounds.size.w, 50),
-            .background_color = GColorClear,
-            .text_color = GColorBlack,
             .init_text = "- 00:00 -",
             .font = fonts_get_system_font(FONT_KEY_LECO_20_BOLD_NUMBERS),
             .text_alignment = GTextAlignmentCenter}
@@ -80,8 +89,8 @@ static void main_window_load(Window *window) {
     for (int i = 0; i < TOTAL_TEXT_LAYER; i++) {
         text_layers[i] =  text_layer_create(text_layer_props[i].rect);
 
-        text_layer_set_background_color(text_layers[i], text_layer_props[i].background_color);
-        text_layer_set_text_color(text_layers[i], text_layer_props[i].text_color);
+        text_layer_set_background_color(text_layers[i], text_color_prop.background_color);
+        text_layer_set_text_color(text_layers[i], text_color_prop.forground_color);
         text_layer_set_text(text_layers[i], text_layer_props[i].init_text);
         text_layer_set_font(text_layers[i], text_layer_props[i].font);
         text_layer_set_text_alignment(text_layers[i], text_layer_props[i].text_alignment);

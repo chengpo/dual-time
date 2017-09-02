@@ -1,12 +1,18 @@
 {
     "author": "Po Cheng",
-    "dependencies": {},
+    "dependencies": {
+        "pebble-clay": "^1.0.4",
+        "pebblejs": "^1.0.0"
+    },
     "keywords": [],
     "name": "dual-time",
     "pebble": {
         "displayName": "Dual Time",
         "enableMultiJS": true,
-        "messageKeys": [],
+        "messageKeys": [
+            "InvertedColor",
+            "TimeZone"
+        ],
         "projectType": "native",
         "resources": {
             "media": []
