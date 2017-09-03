@@ -22,11 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #define CCT (+8)
 
+#define SETTINGS_KEY (1)
+
 #define TOTAL_TEXT_LAYER (4)
 #define LOCAL_WDAY_TEXT_LAYER (text_layers[0])
 #define LOCAL_TIME_TEXT_LAYER (text_layers[1])
 #define LOCAL_DATE_TEXT_LAYER (text_layers[2])
 #define FOREIGN_TIME_TEXT_LAYER (text_layers[3])
+
+typedef struct {
+  bool revert_color;
+}  __attribute__((__packed__)) ClaySettings
 
 typedef struct {
     GRect  rect;
@@ -42,6 +48,17 @@ typedef struct {
 
 static TextLayer *text_layers[TOTAL_TEXT_LAYER];
 static Window *s_main_window;
+static ClaySettings s_settings;
+
+static void load_default_settings {
+    s_settings.revert_color = false;
+}
+
+static void load_user_settings {
+    load_default_settings();
+  
+    
+}
 
 static void main_window_load(Window *window) {
     // Get information about the Window
