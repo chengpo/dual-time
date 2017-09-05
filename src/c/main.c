@@ -31,8 +31,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define FOREIGN_TIME_TEXT_LAYER (text_layers[3])
 
 typedef struct {
-  bool revert_color;
-}  __attribute__((__packed__)) ClaySettings
+  bool invert_color;
+}  __attribute__((__packed__)) ClaySettings;
 
 typedef struct {
     GRect  rect;
@@ -48,16 +48,54 @@ typedef struct {
 
 static TextLayer *text_layers[TOTAL_TEXT_LAYER];
 static Window *s_main_window;
+
 static ClaySettings s_settings;
 
-static void load_default_settings {
-    s_settings.revert_color = false;
+static void update_display();
+
+static void load_default_settings() {
+    s_settings.invert_color = false;
 }
 
-static void load_user_settings {
+static void load_user_settings() {
     load_default_settings();
+
+    // Read settings from persistent storage, if they exist
+    persist_read_data(SETTINGS_KEY, &s_settings, sizeof(s_settings));
+}
+
+static void save_settings() {
+    persist_write_data(SETTINGS_KEY, &s_settings, sizeof(s_settings));
+}
+
+static void inbox_received_handler(DictionaryIterator *iter, void *context) {
+    // Read invert color preference
+    Tuple *invert_color_t = dict_find(iter, MESSAGE_KEY_InvertColors);
+    if (invert_color_t) {
+        s_settings.invert_color = invert_color_t->value->int32 == 1;
+    }
+
+    save_settings();
+    update_display();
+}
+
+static void update_display() {
+    // Set window and text color
+    TextColorProp text_color_prop;
   
-    
+    text_color_prop.forground_color = s_settings.invert_color ? GColorWhite : GColorBlack;
+    text_color_prop.background_color = s_settings.invert_color ? GColorBlack : GColorWhite;
+  
+    if (s_settings.invert_color) {
+        window_set_background_color(s_main_window, GColorBlack);
+    } else {
+        window_set_background_color(s_main_window, GColorWhite);
+    }
+ 
+    for (int i = 0; i < TOTAL_TEXT_LAYER; i++) {
+        text_layer_set_background_color(text_layers[i], text_color_prop.background_color);
+        text_layer_set_text_color(text_layers[i], text_color_prop.forground_color);
+    } 
 }
 
 static void main_window_load(Window *window) {
@@ -65,20 +103,6 @@ static void main_window_load(Window *window) {
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_bounds(window_layer);
   
-    bool revert_color = true;
-  
-    // Init text color
-    TextColorProp text_color_prop;
-  
-    text_color_prop.forground_color = revert_color ? GColorWhite : GColorBlack;
-    text_color_prop.background_color = revert_color ? GColorBlack : GColorWhite;
-  
-    if (revert_color) {
-        window_set_background_color(window, GColorBlack);
-    } else {
-        window_set_background_color(window, GColorWhite);
-    }
-    
     // Init text layer properties
     TextLayerProp text_layer_props[] = {
         // local week day
@@ -106,14 +130,14 @@ static void main_window_load(Window *window) {
     for (int i = 0; i < TOTAL_TEXT_LAYER; i++) {
         text_layers[i] =  text_layer_create(text_layer_props[i].rect);
 
-        text_layer_set_background_color(text_layers[i], text_color_prop.background_color);
-        text_layer_set_text_color(text_layers[i], text_color_prop.forground_color);
         text_layer_set_text(text_layers[i], text_layer_props[i].init_text);
         text_layer_set_font(text_layers[i], text_layer_props[i].font);
         text_layer_set_text_alignment(text_layers[i], text_layer_props[i].text_alignment);
 
         layer_add_child(window_layer, text_layer_get_layer(text_layers[i]));
     }
+
+    update_display();
 }
 
 static void update_local_wday() {
@@ -170,6 +194,12 @@ static void main_window_unload(Window *window) {
 }
 
 static void init() {
+    load_user_settings(); 
+    
+    // Open AppMessage connection
+    app_message_register_inbox_received(inbox_received_handler);
+    app_message_open(128, 128);
+
     // Create main Window element and assign to pointer
     s_main_window = window_create();
 
