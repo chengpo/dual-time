@@ -25,6 +25,6 @@ SOFTWARE.
 Dual Time is a minimalism pebble watch face which simultaneously displays local time and Chinese time on screen.
 Dual Time provides settings for inverting text color base on Clay library.
 
-Dual Time could be on Pebble App Store with link <a href="https://apps.getpebble.com/en_US/application/599935000dfc323e1100108c">Dual Time Watch Face </a>
+Dual Time could be on Pebble App Store with link <a href="https://apps.getpebble.com/en_US/application/599935000dfc323e1100108c" target="_blank">Dual Time Watch Face </a>
 
 <img src="/pic/dual-time-screenshot.png" alt="screenshot" width="96"/>
